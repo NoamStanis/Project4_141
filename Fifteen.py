@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtCore import Qt, QRect, QPoint, QSize
-from PyQt5.QtGui import QPainter, QColor, QPen, QBrush
+from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel
 
 grid_size = 500
@@ -43,9 +43,11 @@ class Fifteen(QWidget):
                 q = QRect(QPoint(x, y), QSize(125, 125))
                 self.g_list[i].append(q)
 
+        qp.setFont(QFont("arial",20))
         for item in self.g_list:
             for i in range(4):
                 qp.drawRect(item[i])
+                qp.drawText(item[i], Qt.AlignCenter, "Test")
 
     def mousePressEvent(self, event):
         row = (event.y() - grid_coord) // 125
