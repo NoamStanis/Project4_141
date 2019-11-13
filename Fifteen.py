@@ -34,7 +34,7 @@ class Fifteen(QWidget):
                     if i > j:
                         inv += 1
             board1.insert(blank_spot, ' ')
-            if (blank_spot // 2) % 2 != 0 and inv % 2 == 0 or (blank_spot // 2) % 2 == 0 and inv % 2 != 0:
+            if (blank_spot // 2) % 2 == 0 and inv % 2 == 0 or (blank_spot // 2) % 2 != 0 and inv % 2 != 0:
                 possible = True
 
     def paintEvent(self, event):
