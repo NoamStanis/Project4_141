@@ -64,10 +64,17 @@ class Fifteen(QWidget):
         qp.end()
 
     def mousePressEvent(self, event):
+        mPoint = QPoint(event.x(), event.y())
         row = (event.y() - grid_coord) // 125
         col = (event.x() - grid_coord) // 125
         if 0 <= row <= 3 and 0 <= col <= 3:
             self.moves += 1
+
+        for r_row in self.r_list:
+            for rect in r_row:
+                if rect.contains(mPoint):
+                    num = self.num_board[r_row.index(rect)][self.r_list.index(r_row)]
+        print(num)
         self.update()
 
 
