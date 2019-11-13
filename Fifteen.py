@@ -34,7 +34,7 @@ class Fifteen(QWidget):
                     if i > j:
                         inv += 1
             board1.insert(blank_spot, ' ')
-            if (blank_spot // 2) % 2 == 0 and inv % 2 != 0 or (blank_spot // 2) % 2 != 0 and inv % 2 == 0:
+            if (blank_spot // 2) % 2 != 0 and inv % 2 == 0 or (blank_spot // 2) % 2 == 0 and inv % 2 != 0:
                 possible = True
 
     def paintEvent(self, event):
@@ -64,17 +64,57 @@ class Fifteen(QWidget):
         qp.end()
 
     def mousePressEvent(self, event):
-        mPoint = QPoint(event.x(), event.y())
-        row = (event.y() - grid_coord) // 125
-        col = (event.x() - grid_coord) // 125
-        if 0 <= row <= 3 and 0 <= col <= 3:
+        blank_pos = None
+        board = self.num_board
+        squares = self.r_list
+        x = event.x()
+        y = event.y()
+        mPoint = QPoint(x, y)
+        row = (y - grid_coord) // 125
+        col = (x - grid_coord) // 125
+        mCoord = (row, col)
+        if 50 <= mPoint.x() <= 550 and 50 <= mPoint.y() <= 550:
             self.moves += 1
 
-        for r_row in self.r_list:
-            for rect in r_row:
-                if rect.contains(mPoint):
-                    num = self.num_board[r_row.index(rect)][self.r_list.index(r_row)]
-        print(num)
+        # for r_row in squares: # This gives you the number where you clicked
+        #     for rect in r_row:
+        #         if rect.contains(mPoint):
+        #             num = self.num_board[r_row.index(rect)][squares.index(r_row)]
+
+        for r in board:
+            for n in r:
+                if n == ' ':
+                    blank_pos = (board.index(r), r.index(n))  # position of the blank spot
+
+        blank_above = (blank_pos[0] - 1, blank_pos[1])
+        blank_below = (blank_pos[0] + 1, blank_pos[1])
+        blank_left = (blank_pos[0], blank_pos[1] - 1)
+        blank_right = (blank_pos[0], blank_pos[1] + 1)
+
+        if mCoord == blank_above and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3:
+            num = board[mCoord[0]][mCoord[1]]
+            blankspot = board[blank_pos[0]][blank_pos[1]]
+            board[blank_pos[0]][blank_pos[1]] = num
+            board[mCoord[0]][mCoord[1]] = blankspot
+
+        elif mCoord == blank_below and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3:
+            num = board[mCoord[0]][mCoord[1]]
+            blankspot = board[blank_pos[0]][blank_pos[1]]
+            board[blank_pos[0]][blank_pos[1]] = num
+            board[mCoord[0]][mCoord[1]] = blankspot
+
+        elif mCoord == blank_left and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3:
+            num = board[mCoord[0]][mCoord[1]]
+            blankspot = board[blank_pos[0]][blank_pos[1]]
+            board[blank_pos[0]][blank_pos[1]] = num
+            board[mCoord[0]][mCoord[1]] = blankspot
+
+        elif mCoord == blank_right and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3:
+            num = board[mCoord[0]][mCoord[1]]
+            blankspot = board[blank_pos[0]][blank_pos[1]]
+            board[blank_pos[0]][blank_pos[1]] = num
+            board[mCoord[0]][mCoord[1]] = blankspot
+
         self.update()
 
 
