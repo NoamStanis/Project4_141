@@ -1,8 +1,8 @@
 import sys
-
+from random import shuffle
 from PyQt5.QtCore import Qt, QRect, QPoint, QSize
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel
+from PyQt5.QtWidgets import QWidget, QApplication
 
 grid_size = 500
 grid_coord = 50
@@ -13,13 +13,29 @@ class Fifteen(QWidget):
         super().__init__()
         self.setWindowTitle('Fifteen')
         self.setGeometry(400, 250, 600, 600)
-        self.board = [[1, 2, 3, 4],
-                      [5, 6, 7, 8],
-                      [9, 10, 11, 12],
-                      [13, 14, 15, -1]]
         self.g_list = [[], [], [], []]
-
+        self.moves = 0
+        self.scramble()
         self.show()
+
+    def scramble(self):
+        """check if its solvable and if not recreate it"""
+        possible = False
+        while not possible:
+            board1 = [i for i in range(1, 16)] + [' ']  # 1D List
+            blank_spot = board1.index(' ')
+            shuffle(board1)
+            n = 4
+            self.board = [board1[i:i + n] for i in range(0, len(board1), n)]  # 2D version of the grid's list
+            board1.remove(' ')
+            inv = 0  # number of inversions
+            for i in board1:
+                for j in board1[board1.index(i):]:
+                    if i > j:
+                        inv += 1
+            board1.insert(blank_spot, ' ')
+            if (blank_spot // 2) % 2 == 0 and inv % 2 != 0 or (blank_spot // 2) % 2 != 0 and inv % 2 == 0:
+                possible = True
 
     def paintEvent(self, event):
         qp = QPainter()
@@ -29,12 +45,6 @@ class Fifteen(QWidget):
 
         qp.setPen(grid_pen)
         qp.setBrush(grid_brush)
-        # qp.drawRect(grid_coord, grid_coord, grid_size, grid_size)
-
-        # for i in range(1, 4):  # draw the grid
-        #     x = (i * 125) + 50
-        #     qp.drawLine(x, 50, x, 550)
-        #     qp.drawLine(50, x, 550, x)
 
         for i in range(4):
             for j in range(4):
@@ -43,23 +53,24 @@ class Fifteen(QWidget):
                 q = QRect(QPoint(x, y), QSize(125, 125))
                 self.g_list[i].append(q)
 
-        qp.setFont(QFont("arial",20))
-        for item in self.g_list:
-            for i in range(4):
-                qp.drawRect(item[i])
-                qp.drawText(item[i], Qt.AlignCenter, "Test")
+
+        qp.setFont(QFont("arial", 20))
+        qp.drawText(50, 580, "Moves: " + str(self.moves))
+
+        for i in range(len(self.g_list)):
+            for j in range(4):
+                qp.drawRect(self.g_list[i][j])
+                qp.drawText(self.g_list[i][j], Qt.AlignCenter, str(self.board[j][i]))
+
+        qp.end()
 
     def mousePressEvent(self, event):
         row = (event.y() - grid_coord) // 125
         col = (event.x() - grid_coord) // 125
+        if 0 <= row <= 3 and 0 <= col <= 3:
+            self.moves += 1
         print(row, col)
-
-        # for i in range(4):
-        #     for j in range(4):
-        #         x = (i * 125) + 62.5
-        #         y = (j * 125) + 62.5
-        #         print(x, y)
-
+        print(self.g_list)
         self.update()
 
 
