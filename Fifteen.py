@@ -28,13 +28,17 @@ class Fifteen(QWidget):
             n = 4
             self.num_board = [board1[i:i + n] for i in range(0, len(board1), n)]  # 2D version of the grid's list
             board1.remove(' ')
+            for i in self.num_board:
+                if ' ' in i:
+                    blank_spot = 4 - self.num_board.index(i)
+
             inv = 0  # number of inversions
             for i in board1:
                 for j in board1[board1.index(i):]:
                     if i > j:
                         inv += 1
             board1.insert(blank_spot, ' ')
-            if (blank_spot // 2) % 2 == 0 and inv % 2 == 0 or (blank_spot // 2) % 2 != 0 and inv % 2 != 0:
+            if blank_spot % 2 == 0 and inv % 2 != 0 or blank_spot % 2 != 0 and inv % 2 == 0:
                 possible = True
 
     def paintEvent(self, event):
