@@ -2,7 +2,7 @@ import sys
 from random import shuffle
 from PyQt5.QtCore import Qt, QRect, QPoint, QSize
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont
-from PyQt5.QtWidgets import QWidget, QApplication
+from PyQt5.QtWidgets import QWidget, QApplication, QProgressBar, QLabel
 
 grid_size = 500
 grid_coord = 50
@@ -15,29 +15,44 @@ class Fifteen(QWidget):
         self.setGeometry(400, 250, 600, 600)
         self.r_list = [[], [], [], []]
         self.moves = 0
+        self.num_board = []
+        self.solved = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, ' ']]
         self.scramble()
+
+        self.progress = QProgressBar(self)
+        self.progress.setGeometry(250, 25, 100, 20)
+        self.progress.setMaximum(16)
+        self.progress.setTextVisible(True)
+        self.progress.setAlignment(Qt.AlignRight)
+        self.value = 0
+        self.progress.setValue(self.value)
+
+        self.percent = QLabel(str(self.progress.value() // 16) + "%", self)
+        self.percent.setGeometry(360, 25, 100, 20)
+
         self.show()
 
     def scramble(self):
         """check if its solvable and if not recreate it"""
         possible = False
         while not possible:
-            board1 = [i for i in range(1, 16)] + [' ']  # 1D List
-            blank_spot = board1.index(' ')
-            shuffle(board1)
+            self.board1 = [i for i in range(1, 16)] + [' ']  # 1D List
+            blank_spot = self.board1.index(' ')
+            shuffle(self.board1)
             n = 4
-            self.num_board = [board1[i:i + n] for i in range(0, len(board1), n)]  # 2D version of the grid's list
-            board1.remove(' ')
+            self.num_board = [self.board1[i:i + n] for i in range(0, len(self.board1), n)]  # 2D version of the grid's list
+            og_blank_spot = self.board1.index(' ')
+            self.board1.remove(' ')
             for i in self.num_board:
                 if ' ' in i:
                     blank_spot = 4 - self.num_board.index(i)
 
             inv = 0  # number of inversions
-            for i in board1:
-                for j in board1[board1.index(i):]:
+            for i in self.board1:
+                for j in self.board1[self.board1.index(i):]:
                     if i > j:
                         inv += 1
-            board1.insert(blank_spot, ' ')
+            self.board1.insert(og_blank_spot, ' ')
             if blank_spot % 2 == 0 and inv % 2 != 0 or blank_spot % 2 != 0 and inv % 2 == 0:
                 possible = True
 
@@ -96,6 +111,15 @@ class Fifteen(QWidget):
             board[blank_pos[0]][blank_pos[1]] = num
             board[mCoord[0]][mCoord[1]] = blankspot
             self.moves += 1
+
+            completed_nums = []
+            for n1 in range(len(self.num_board)):
+                for n2 in range(4):
+                    if self.num_board[n1][n2] == self.solved[n1][n2] and self.num_board[n1][n2] not in completed_nums:
+                        completed_nums.append(self.solved[n1][n2])
+                        self.value = len(completed_nums)
+                        self.progress.setValue(self.value)
+                        self.percent.setText(str(self.value / 16 * 100) + "%")
 
         self.update()
 
