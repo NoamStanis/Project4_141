@@ -2,10 +2,41 @@ import sys
 from random import shuffle
 from PyQt5.QtCore import Qt, QRect, QPoint, QSize
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont
-from PyQt5.QtWidgets import QWidget, QApplication, QProgressBar, QLabel
+from PyQt5.QtWidgets import QWidget, QApplication, QProgressBar, QLabel, QPushButton, QMainWindow
 
 grid_size = 500
 grid_coord = 50
+
+window = None
+
+
+class MainMenu(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Main Menu')
+        self.setGeometry(400, 250, 600, 600)
+
+        self.title = QLabel(self)
+        self.title.setText("<font color='#199611'>15-Puzzle")
+        self.setFont(QFont("Trebuchet MS", 100))
+        self.title.setGeometry(90, 0, 430, 150)
+
+        self.start = QPushButton("Start!", self)
+        self.start.setGeometry(150, 200, 300, 50)
+        self.start.clicked.connect(self.play)
+
+        self.exit = QPushButton("Exit", self)
+        self.exit.setGeometry(150, 400, 300, 50)
+        self.exit.clicked.connect(lambda x: sys.exit())
+
+        self.show()
+
+    def play(self):
+        game = Fifteen()
+        window.setCentralWidget(game)
+        game.setParent(self)
+        game.move(-10, -10)
+        game.show()
 
 
 class Fifteen(QWidget):
@@ -58,7 +89,7 @@ class Fifteen(QWidget):
 
     def paintEvent(self, event):
         qp = QPainter()
-        grid_pen = QPen(QPen(Qt.black, 7))
+        grid_pen = QPen(Qt.black, 7)
         grid_brush = QBrush(QColor(56, 182, 199), Qt.SolidPattern)
         qp.begin(self)
 
@@ -126,5 +157,6 @@ class Fifteen(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = Fifteen()
+    window = QMainWindow()
+    ex = MainMenu()
     sys.exit(app.exec_())
