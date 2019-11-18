@@ -1,5 +1,6 @@
 import sys
 from random import shuffle
+from time import sleep
 from PyQt5.QtCore import Qt, QRect, QPoint, QSize
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont
 from PyQt5.QtWidgets import QWidget, QApplication, QProgressBar, QLabel, QPushButton, QMainWindow
@@ -51,6 +52,7 @@ class Fifteen(QWidget):
                        [5, 6, 7, 8],
                        [9, 10, 11, 12],
                        [13, 14, 15, ' ']]
+        self.board1 = []
         self.scramble()
 
         self.progress = QProgressBar(self)
@@ -74,7 +76,8 @@ class Fifteen(QWidget):
             blank_spot = self.board1.index(' ')
             shuffle(self.board1)
             n = 4
-            self.num_board = [self.board1[i:i + n] for i in range(0, len(self.board1), n)]  # 2D version of the grid's list
+            self.num_board = [self.board1[i:i + n] for i in
+                              range(0, len(self.board1), n)]  # 2D version of the grid's list
             og_blank_spot = self.board1.index(' ')
             self.board1.remove(' ')
             for i in self.num_board:
@@ -114,48 +117,103 @@ class Fifteen(QWidget):
                 qp.drawRect(self.r_list[i][j])
                 qp.drawText(self.r_list[i][j], Qt.AlignCenter, str(self.num_board[j][i]))
 
+        if self.value == 16:
+            self.value = 0
+            qp.setBrush(QBrush(Qt.white, Qt.SolidPattern))
+            qp.eraseRect(0, 0, 600, 600)
+            self.win()
+
         qp.end()
 
     def mousePressEvent(self, event):
         blank_pos = None
-        board = self.num_board
         x = event.x()
         y = event.y()
-        mPoint = QPoint(x, y)
         row = (y - grid_coord) // 125
         col = (x - grid_coord) // 125
-        mCoord = (row, col)
-
-        for r in board:
+        mCoord = (row, col)  # The exact square which is clicked
+        for r in self.num_board:
             for n in r:
                 if n == ' ':
-                    blank_pos = (board.index(r), r.index(n))  # position of the blank spot
+                    blank_pos = (self.num_board.index(r), r.index(n))  # position of the blank spot
+        self.move_click(mCoord, blank_pos, self.num_board)
 
-        blank_above = (blank_pos[0] - 1, blank_pos[1])
-        blank_below = (blank_pos[0] + 1, blank_pos[1])
-        blank_left = (blank_pos[0], blank_pos[1] - 1)
-        blank_right = (blank_pos[0], blank_pos[1] + 1)
-
-        if (mCoord == blank_above and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3
-                or mCoord == blank_below and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3
-                or mCoord == blank_left and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3
-                or mCoord == blank_right and 0 <= mCoord[0] <= 3 and 0 <= mCoord[1] <= 3):
-            num = board[mCoord[0]][mCoord[1]]
-            blankspot = board[blank_pos[0]][blank_pos[1]]
-            board[blank_pos[0]][blank_pos[1]] = num
-            board[mCoord[0]][mCoord[1]] = blankspot
-            self.moves += 1
-
-            completed_nums = []
-            for n1 in range(len(self.num_board)):
-                for n2 in range(4):
-                    if self.num_board[n1][n2] == self.solved[n1][n2] and self.num_board[n1][n2] not in completed_nums:
-                        completed_nums.append(self.solved[n1][n2])
-                        self.value = len(completed_nums)
-                        self.progress.setValue(self.value)
-                        self.percent.setText(str(self.value / 16 * 100) + "%")
+        completed_nums = []
+        for n1 in range(len(self.num_board)):
+            for n2 in range(4):
+                if self.num_board[n1][n2] == self.solved[n1][n2] and self.num_board[n1][n2] not in completed_nums:
+                    completed_nums.append(self.solved[n1][n2])
+                    self.value = len(completed_nums)
+                    self.progress.setValue(self.value)
+                    self.percent.setText(str(self.value / 16 * 100) + "%")
 
         self.update()
+
+    def move_click(self, mouse, blank, board):
+        """
+        Sees how far away the mouse click is from the blank, and move the numbers accordingly.
+        :param mouse: Coordinates of the mouse click on the grid, tuple
+        :param blank: Coordinates of the blank spot on the grid, tuple
+        :param board: 2D list of all the numbers on screen, list
+        :return: None
+        """
+
+        if mouse[0] == blank[0] and mouse[1] != blank[1]:  # Checks rows
+            distance = mouse[1] - blank[1]
+
+            if abs(distance) == 1:
+                clicked_num = board[mouse[0]][mouse[1]]
+                board[blank[0]][blank[1]] = clicked_num
+                board[mouse[0]][mouse[1]] = ' '
+                self.moves += 1
+
+        if mouse[1] == blank[1] and mouse[0] != blank[0]:  # Checks columns
+            distance = mouse[0] - blank[0]
+
+            if abs(distance) == 1:
+                clicked_num = board[mouse[0]][blank[1]]
+                board[blank[0]][blank[1]] = clicked_num
+                board[mouse[0]][mouse[1]] = ' '
+                self.moves += 1
+
+            elif distance == -2:
+                d = abs(distance)
+                board[mouse[0] + d][mouse[1]] = board[mouse[0] + d - 1][mouse[1]]
+                board[mouse[0] + d - 1][mouse[1]] = board[mouse[0] + d - 2][mouse[1]]
+                board[mouse[0] + d - 2][mouse[1]] = ' '
+                self.moves += d
+
+            elif distance == -3:
+                d = abs(distance)
+                closest_num = board[mouse[0] + d - 1][mouse[1]]
+                second_num = board[mouse[0] + d - 2][mouse[1]]
+                board[blank[0]][blank[1]] = closest_num
+                board[mouse[0] + d - 1][mouse[1]] = second_num
+                board[mouse[0] + d - 2][mouse[1]] = board[mouse[0] + d - 3][mouse[1]]
+                board[mouse[0]][mouse[1]] = ' '
+                self.moves += d
+
+            elif distance == 2:
+                board[mouse[0] - distance][mouse[1]] = board[mouse[0] - distance + 1][mouse[1]]
+                board[mouse[0] - distance + 1][mouse[1]] = board[mouse[0] - distance + 2][mouse[1]]
+                board[mouse[0] - distance + 2][mouse[1]] = ' '
+                self.moves += distance
+
+            elif distance == 3:
+                closest_num = board[mouse[0] - distance + 1][mouse[1]]
+                second_num = board[mouse[0] - distance + 2][mouse[1]]
+                board[blank[0]][blank[1]] = closest_num
+                board[mouse[0] - distance + 1][mouse[1]] = second_num
+                board[mouse[0] - distance + 2][mouse[1]] = board[mouse[0] - distance + 3][mouse[1]]
+                board[mouse[0]][mouse[1]] = ' '
+                self.moves += distance
+
+    def win(self):
+        menu = MainMenu()
+        window.setCentralWidget(menu)
+        menu.setParent(self)
+        menu.move(10, 10)
+        menu.show()
 
 
 if __name__ == '__main__':
