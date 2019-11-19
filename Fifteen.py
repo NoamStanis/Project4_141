@@ -123,17 +123,18 @@ class Fifteen(QWidget):
                     qp.drawText(self.r_list[i][j], Qt.AlignCenter, str(self.num_board[j][i]))
 
         if self.value == 6:
-			sleep(1)
-			self.percent.hide()
-			self.progress.hide()
-			qp.setFont(QFont("Trebuchet MS", 90))
-			qp.setPen(QPen(QColor(47, 100, 186), 7))
-			qp.drawText(50, 300, "You Win!")
+            sleep(5)
+            self.percent.hide()
+            self.progress.hide()
+            qp.setFont(QFont("Trebuchet MS", 90))
+            qp.setPen(QPen(QColor(47, 100, 186), 7))
+            qp.drawText(50, 300, "You Win!")
 
-			self.main_button = QPushButton("Main Menu", self)
-			self.main_button.setGeometry(150, 400, 300, 50)
-			self.main_button.show()
-			self.main_button.clicked.connect(lambda m: os.execl(sys.executable, sys.executable, *sys.argv))
+            self.value = 0
+            self.main_button = QPushButton("Main Menu", self)
+            self.main_button.setGeometry(150, 400, 300, 50)
+            self.main_button.show()
+            self.main_button.clicked.connect(lambda m: os.execl(sys.executable, sys.executable, *sys.argv))
 
         qp.end()
 
