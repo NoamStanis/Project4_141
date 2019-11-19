@@ -19,10 +19,11 @@ class MainMenu(QWidget):
         self.setGeometry(400, 250, 600, 600)
 
         self.title = QLabel("<font color='#199611'>15-Puzzle", self)
-        self.setFont(QFont("Trebuchet MS", 100))
-        self.title.setGeometry(90, 0, 430, 150)
+        self.title.setFont(QFont("Trebuchet MS", 70))
+        self.title.setGeometry(90, 0, 450, 170)
 
         self.start = QPushButton("Play", self)
+        self.setFont(QFont("Trebuchet MS", 20))
         self.start.setGeometry(150, 200, 300, 50)
         self.start.clicked.connect(self.play)
 
@@ -61,7 +62,7 @@ class Fifteen(QWidget):
         self.progress = QProgressBar(self)
         self.progress.setGeometry(250, 25, 100, 20)
         self.progress.setMaximum(16)
-        self.progress.setTextVisible(True)
+        self.progress.setTextVisible(False)
         self.progress.setAlignment(Qt.AlignRight)
         self.value = 0
         self.progress.setValue(self.value)
@@ -105,7 +106,7 @@ class Fifteen(QWidget):
         qp.setPen(grid_pen)
         qp.setBrush(grid_brush)
 
-        if self.value < 5:
+        if self.value < 6:
             for i in range(4):
                 for j in range(4):
                     x = (i * 125) + 50
@@ -121,19 +122,18 @@ class Fifteen(QWidget):
                     qp.drawRect(self.r_list[i][j])
                     qp.drawText(self.r_list[i][j], Qt.AlignCenter, str(self.num_board[j][i]))
 
-        if self.value == 5:
-            self.percent.hide()
-            self.progress.hide()
-            qp.setFont(QFont("Trebuchet MS", 125))
-            qp.setPen(QPen(QColor(47, 100, 186), 7))
-            qp.drawText(50, 300, "You Win!")
-            qp.setBrush(QBrush(Qt.white,Qt.SolidPattern))
-            qp.eraseRect(50,300,400,400)
+        if self.value == 6:
+			sleep(1)
+			self.percent.hide()
+			self.progress.hide()
+			qp.setFont(QFont("Trebuchet MS", 90))
+			qp.setPen(QPen(QColor(47, 100, 186), 7))
+			qp.drawText(50, 300, "You Win!")
 
-            self.main_button = QPushButton("Main Menu", self)
-            self.main_button.setGeometry(150, 400, 300, 50)
-            self.main_button.show()
-            self.main_button.clicked.connect(lambda m: os.execl(sys.executable, sys.executable, *sys.argv))
+			self.main_button = QPushButton("Main Menu", self)
+			self.main_button.setGeometry(150, 400, 300, 50)
+			self.main_button.show()
+			self.main_button.clicked.connect(lambda m: os.execl(sys.executable, sys.executable, *sys.argv))
 
         qp.end()
 
