@@ -106,7 +106,7 @@ class Fifteen(QWidget):
         qp.setPen(grid_pen)
         qp.setBrush(grid_brush)
 
-        if self.value < 6:
+        if self.value < 2:
             for i in range(4):
                 for j in range(4):
                     x = (i * 125) + 50
@@ -122,20 +122,23 @@ class Fifteen(QWidget):
                     qp.drawRect(self.r_list[i][j])
                     qp.drawText(self.r_list[i][j], Qt.AlignCenter, str(self.num_board[j][i]))
 
-        if self.value == 6:
-            sleep(2)
+        if self.value == 2:
+            self.value = 0
+            # self.update()
+            qp.setBrush(QBrush(Qt.white, Qt.SolidPattern))
+            qp.drawRect(0, 0, 610, 610)
             self.percent.hide()
             self.progress.hide()
+
             qp.setFont(QFont("Trebuchet MS", 90))
             qp.setPen(QPen(QColor(47, 100, 186), 7))
             qp.drawText(50, 300, "You Win!")
 
-            self.value = 0
             self.main_button = QPushButton("Main Menu", self)
             self.main_button.setGeometry(150, 400, 300, 50)
             self.main_button.show()
             self.main_button.clicked.connect(lambda m: os.execl(sys.executable, sys.executable, *sys.argv))
-
+        
         qp.end()
 
     def mousePressEvent(self, event):
