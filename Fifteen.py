@@ -1,8 +1,9 @@
 import sys
+import os
 from random import shuffle
 from time import sleep
 from PyQt5.QtCore import Qt, QRect, QPoint, QSize
-from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont
+from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont, QWindow
 from PyQt5.QtWidgets import QWidget, QApplication, QProgressBar, QLabel, QPushButton, QMainWindow
 
 grid_size = 500
@@ -12,17 +13,16 @@ window = None
 
 
 class MainMenu(QWidget):
-    def __init__(self):
+    def __init__(self, won):
         super().__init__()
         self.setWindowTitle('Main Menu')
         self.setGeometry(400, 250, 600, 600)
 
-        self.title = QLabel(self)
-        self.title.setText("<font color='#199611'>15-Puzzle")
+        self.title = QLabel("<font color='#199611'>15-Puzzle", self)
         self.setFont(QFont("Trebuchet MS", 100))
         self.title.setGeometry(90, 0, 430, 150)
 
-        self.start = QPushButton("Start!", self)
+        self.start = QPushButton("Play", self)
         self.start.setGeometry(150, 200, 300, 50)
         self.start.clicked.connect(self.play)
 
@@ -33,6 +33,9 @@ class MainMenu(QWidget):
         self.show()
 
     def play(self):
+        self.title.hide()
+        self.start.hide()
+        self.exit.hide()
         game = Fifteen()
         window.setCentralWidget(game)
         game.setParent(self)
@@ -102,26 +105,35 @@ class Fifteen(QWidget):
         qp.setPen(grid_pen)
         qp.setBrush(grid_brush)
 
-        for i in range(4):
-            for j in range(4):
-                x = (i * 125) + 50
-                y = (j * 125) + 50
-                q = QRect(QPoint(x, y), QSize(125, 125))
-                self.r_list[i].append(q)
+        if self.value < 5:
+            for i in range(4):
+                for j in range(4):
+                    x = (i * 125) + 50
+                    y = (j * 125) + 50
+                    q = QRect(QPoint(x, y), QSize(125, 125))
+                    self.r_list[i].append(q)
 
-        qp.setFont(QFont("arial", 20))
-        qp.drawText(50, 580, "Moves: " + str(self.moves))
+            qp.setFont(QFont("arial", 20))
+            qp.drawText(50, 580, "Moves: " + str(self.moves))
 
-        for i in range(len(self.r_list)):
-            for j in range(4):
-                qp.drawRect(self.r_list[i][j])
-                qp.drawText(self.r_list[i][j], Qt.AlignCenter, str(self.num_board[j][i]))
+            for i in range(len(self.r_list)):
+                for j in range(4):
+                    qp.drawRect(self.r_list[i][j])
+                    qp.drawText(self.r_list[i][j], Qt.AlignCenter, str(self.num_board[j][i]))
 
-        if self.value == 16:
-            self.value = 0
-            qp.setBrush(QBrush(Qt.white, Qt.SolidPattern))
-            qp.eraseRect(0, 0, 600, 600)
-            self.win()
+        if self.value == 5:
+            self.percent.hide()
+            self.progress.hide()
+            qp.setFont(QFont("Trebuchet MS", 125))
+            qp.setPen(QPen(QColor(47, 100, 186), 7))
+            qp.drawText(50, 300, "You Win!")
+            qp.setBrush(QBrush(Qt.white,Qt.SolidPattern))
+            qp.eraseRect(50,300,400,400)
+
+            self.main_button = QPushButton("Main Menu", self)
+            self.main_button.setGeometry(150, 400, 300, 50)
+            self.main_button.show()
+            self.main_button.clicked.connect(lambda m: os.execl(sys.executable, sys.executable, *sys.argv))
 
         qp.end()
 
@@ -160,12 +172,39 @@ class Fifteen(QWidget):
 
         if mouse[0] == blank[0] and mouse[1] != blank[1]:  # Checks rows
             distance = mouse[1] - blank[1]
-
-            if abs(distance) == 1:
+            d = abs(distance)
+            if d == 1:
                 clicked_num = board[mouse[0]][mouse[1]]
                 board[blank[0]][blank[1]] = clicked_num
                 board[mouse[0]][mouse[1]] = ' '
                 self.moves += 1
+
+            elif distance == -2:
+                board[mouse[0]][mouse[1] + d] = board[mouse[0]][mouse[1] + d - 1]
+                board[mouse[0]][mouse[1] + d - 1] = board[mouse[0]][mouse[1]]
+                board[mouse[0]][mouse[1]] = ' '
+                self.moves += d
+
+            elif distance == -3:
+                closest_num = board[mouse[0]][mouse[1] + d - 1]
+                second_num = board[mouse[0]][mouse[1] + d - 2]
+                board[blank[0]][blank[1]] = closest_num
+                board[mouse[0]][mouse[1] + d - 1] = second_num
+                board[mouse[0]][mouse[1] + d - 2] = board[mouse[0]][mouse[1]]
+                board[mouse[0]][mouse[1]] = ' '
+
+            elif distance == 2:
+                board[mouse[0]][mouse[1] - distance] = board[mouse[0]][mouse[1] - distance + 1]
+                board[mouse[0]][mouse[1] - distance + 1] = board[mouse[0]][mouse[1]]
+                board[mouse[0]][mouse[1]] = ' '
+
+            elif distance == 3:
+                closest_num = board[mouse[0]][mouse[1] - distance + 1]
+                second_num = board[mouse[0]][mouse[1] - distance + 2]
+                board[blank[0]][blank[1]] = closest_num
+                board[mouse[0]][mouse[1] - distance + 1] = second_num
+                board[mouse[0]][mouse[1] - distance + 2] = board[mouse[0]][mouse[1]]
+                board[mouse[0]][mouse[1]] = ' '
 
         if mouse[1] == blank[1] and mouse[0] != blank[0]:  # Checks columns
             distance = mouse[0] - blank[0]
@@ -208,16 +247,9 @@ class Fifteen(QWidget):
                 board[mouse[0]][mouse[1]] = ' '
                 self.moves += distance
 
-    def win(self):
-        menu = MainMenu()
-        window.setCentralWidget(menu)
-        menu.setParent(self)
-        menu.move(10, 10)
-        menu.show()
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = QMainWindow()
-    ex = MainMenu()
+    ex = MainMenu(False)
     sys.exit(app.exec_())
