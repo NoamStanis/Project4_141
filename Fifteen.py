@@ -123,7 +123,7 @@ class Fifteen(QWidget):
                     qp.drawText(self.r_list[i][j], Qt.AlignCenter, str(self.num_board[j][i]))
 
         if self.value == 6:
-            sleep(5)
+            sleep(2)
             self.percent.hide()
             self.progress.hide()
             qp.setFont(QFont("Trebuchet MS", 90))
