@@ -98,10 +98,6 @@ class Fifteen(QWidget):
             self.board1.insert(og_blank_spot, ' ')
             if blank_spot % 2 == 0 and inv % 2 != 0 or blank_spot % 2 != 0 and inv % 2 == 0:
                 possible = True
-        self.num_board = [[1,2,3,4],
-                          [5, 6, 7,8],
-                          [9,10,11,12],
-                          [13,14,' ', 15]]
 
     def paintEvent(self, event):
         qp = QPainter()
@@ -134,14 +130,15 @@ class Fifteen(QWidget):
         if self.win:
             self.progress.hide()
             self.percent.hide()
-            ppath = QPainterPath()
-            qp.setPen(QPen(Qt.black, 5))
-            qp.setBrush(Qt.white)
-            ppath.addText(20, 150, QFont("Trebuchet MS", 140), "You Win!")
-            qp.setPen(QPen(Qt.black, 2))
-            ppath.addText(20, 325, QFont("Trebuchet MS", 60), "Click the screen")
-            ppath.addText(20, 380, QFont("Trebuchet MS", 60), "to restart the game!")
-            qp.drawPath(ppath)
+            qp.setPen(QPen(QColor(29, 121, 171), 5))
+            qp.setFont(QFont("Trebuchet MS", 95))
+            qp.drawText(35, 160, "You Win!")
+
+            qp.setPen(QPen(QColor(25, 150, 17), 5))
+            qp.setFont(QFont("Trebuchet MS", 40))
+            qp.drawText(20, 350, "Click the screen")
+            qp.drawText(25, 400, "to restart the game!")
+
             self.win2 = True
 
         qp.end()
